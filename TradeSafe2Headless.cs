@@ -714,14 +714,43 @@ namespace TradeSafe3
 
 namespace NinjaTrader.NinjaScript.Indicators
 {
-	public class TradeSafe2Headless : Indicator
+	public class TradeSafe3Headless : Indicator
 	{
+        #region Constants
+        const int    atrAvg = 14;               // ATR days average
+        const double barHeightFactor = 2;       // Reference bar may not be taller than ATR * this
+        #endregion
+
+		#region Variables
+
+		// Trend
+		TradeSafe3.BreakoutMethod  method = TradeSafe3.BreakoutMethod.None;
+
+		// Detect congestion
+		TradeSafe3.Box box;
+		bool plotBox = true;
+
+		// Index of the last reference bar, confirmation bar and breakout bar
+		int lastRefIdx      = -1;
+		int lastConfirmIdx  = -1;
+		int lastBreakoutIdx = -1;
+		int lastReversalIdx = -1;
+
+		// Detect trend
+		TradeSafe3.CrossOverBreakout 	crossover;
+		TradeSafe3.SwingBreakout 		swing;
+
+		// Data series
+		Series<TradeSafe3.Direction> trendValues;
+		#endregion
+
+        #region OnStateChange
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
 			{
-				Description									= @"Headless implementation of the TradeSafe trend indicator. Do not use directly. This indicator is used by other indicators.";
-				Name										= "TradeSafe2Headless";
+				Description									= @"Combined trend indicator that does not plot any drawings.";
+				Name										= "TradeSafe3Headless";
 				Calculate									= Calculate.OnEachTick; // TODO: Try OnPriceChange
 				IsOverlay									= false;
 				DisplayInDataBox							= false;
@@ -729,20 +758,248 @@ namespace NinjaTrader.NinjaScript.Indicators
 				DrawHorizontalGridLines						= true;
 				DrawVerticalGridLines						= false;
 				PaintPriceMarkers							= false;
-				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
-				//Disable this property if your indicator requires custom values that cumulate with each new market data event.
-				//See Help Guide for additional information.
 				IsSuspendedWhileInactive					= true;
 			}
 			else if (State == State.Configure)
 			{
+                crossover = new TradeSafe3.CrossOverBreakout(this);
+                swing     = new TradeSafe3.SwingBreakout(this);
+                trendValues = new Series<TradeSafe3.Direction>(this);
+
+                // Create function to be used to compute the average height of a bar.
+                // It passed into the Box constructor and used by the Box class to skip
+                // single bars that are too long, that create an unreasonably high congestion.
+                // Currently the Average True Range indicator is used to compute the height.
+                Func<ISeries<double>, int, double> r = delegate (ISeries<double> bars, int idxAgo)
+                {
+                    return ATR(bars, atrAvg)[idxAgo] * barHeightFactor;
+                };
+                box = new TradeSafe3.Box(r);
+
+
+                //VendorLicense("TradeSafe", "TradeSafe2Trend", "http://daytradesafe.com", "mguess@daytradesafe.com");
 			}
 		}
+        #endregion
 
-		protected override void OnBarUpdate()
+		#region OnBarUpdate
+        protected override void OnBarUpdate()
+        {
+			if (CurrentBar < atrAvg) return;
+
+			if (plotBox)
+			{
+				// If we're processing historical data, then we process all bars up
+				// to CurrentBar including it, because we know all bars have
+				// completed.  If we're processing realtime data, then we go up to
+				// the previous bar, because the CurrentBar is still ticking.
+				box.Process(Bars, State == State.Historical ? CurrentBar : CurrentBar - 1);
+
+				// If we're processing a live ticking bar, then we'll independently
+				// test for breakout confirmation. This is the only time we make a
+				// decision before the bar has closed. ConfirmBreakout, will check
+				// for the necessary state and update the internals of the box.
+				box.ConfirmBreakout(Bars, CurrentBar);
+
+				if (box.State == TradeSafe3.State.Confirmed)
+				{
+					Trend[0] = box.Dir;
+
+					// Save the confirmation bar to prevent triggering OnBreakoutConfirmed
+					// on the bars between the confirmation and the cancelation
+					if (box.ConfirmationBar != lastConfirmIdx)
+					{
+						lastConfirmIdx = box.ConfirmationBar;
+						OnBreakoutConfirmed();
+					}
+				}
+			}
+
+			// If we're trading outside of any kind of boxes, then we begin
+            // looking for a trend reversal
+			if (box.State == TradeSafe3.State.None && TrendChanged())
+				OnTrendChange();
+
+			// Everything below the follwoing line will be run only once per bar, and it
+			// will apply for the previous bar, which fully closed
+			if (!IsFirstTickOfBar) return;
+
+			switch(box.State)
+			{
+                // When we get inside the box, whether it's the first time or
+                // one of the resets or fakeouts, we must reset the swing and
+                // crossover indicator, in case they've detected the breakout
+                // bar and are waiting for the confirmation.
+				case TradeSafe3.State.Inside:
+				case TradeSafe3.State.Reset:
+				case TradeSafe3.State.Fakeout:
+					swing.Reset();
+					crossover.Reset();
+					Trend[0] = TradeSafe3.Direction.None;
+
+					if (box.State == TradeSafe3.State.Inside)
+					{
+						if (box.ReferenceBar != lastRefIdx)
+						{
+							lastRefIdx = box.ReferenceBar;
+							OnNewCongestion();
+						}
+					}
+					else if (box.State == TradeSafe3.State.Reset)
+						OnBreakoutReset();
+					else if (box.State == TradeSafe3.State.Fakeout)
+						OnBreakoutFakeout();
+
+					break;
+
+				case TradeSafe3.State.Breakout:
+					Trend[0] = TradeSafe3.Direction.None;
+
+					// Save the last breakout bar to prevent triggering OnBreakout
+					// on the bars between the breakout and the confirmation
+					if (box.BreakoutBar != lastBreakoutIdx)
+					{
+						lastBreakoutIdx = box.BreakoutBar;
+						OnBreakout();
+					}
+					break;
+
+				case TradeSafe3.State.Canceled:
+					Trend[0] = Trend[1];
+					OnCongestionCanceled();
+					break;
+			}
+        }
+		#endregion
+
+		#region Virtual
+		protected virtual void OnTrendChange()
 		{
-			//Add your custom indicator logic here.
 		}
+
+		protected virtual void OnNewCongestion()
+		{
+		}
+
+		protected virtual void OnBreakout()
+		{
+		}
+
+		protected virtual void OnBreakoutReset()
+		{
+		}
+
+		protected virtual void OnBreakoutFakeout()
+		{
+		}
+
+		protected virtual void OnBreakoutConfirmed()
+		{
+		}
+
+		protected virtual void OnCongestionCanceled()
+		{
+		}
+		#endregion
+
+		#region TrendChanged
+        // Looks for a change of the trend using the swing and crossover methods.
+        // Returns true, if the trend changed and false otherwise.
+		bool TrendChanged() {
+			bool co, sw, ls = false;
+			var lastTrend = CurrentBar > 0 ? Trend[1] : TradeSafe3.Direction.None;
+			var newTrend = lastTrend;
+
+            // If we detect trend change (reversal), we save the id of the bar,
+            // so we can skip the next iteration.  Remember, this function runs
+            // in real time, i.e. on each tick, i.e. several times per bar.
+			if (CurrentBar == lastReversalIdx)
+				return false;
+
+            // Look for a confirmed crossover reveral
+			if ( co = crossover.Find() ) {
+				newTrend = crossover.Dir;
+				method = TradeSafe3.BreakoutMethod.Crossover;
+			}
+
+            // Look for a confirmed swings reversal
+			if ( sw = swing.Find() ) {
+				newTrend = swing.Dir;
+				method = TradeSafe3.BreakoutMethod.Swing;
+			}
+
+            // If both at the same bar, then mark it as such.  Note: This will
+            // *never* happen in real time, because the swings indicator is
+            // always bound to kick in first, because its confirmation is a
+            // _trade_ above the breakout bar, while the crossover confirmation
+            // is a _close_ above the breakout bar.  A black bar is only going
+            // to show up when rendering historical data
+			if ( co && sw )
+				method = TradeSafe3.BreakoutMethod.Both;
+
+            // Check for loss of trend. We lose the trend when a bar trades
+            // close to the opposite swing, for example if a bar trandes close
+            // to the swing high, while we're in a downtrend, this should case
+            // the loss of trend.  This is only triggered if no other trend
+            // reversals are detected.
+			if ( !co && !sw)
+			{
+				ls = lastTrend == TradeSafe3.Direction.Down && Math.Max(High[0], Low[0]) >= Swing(5).SwingHigh[0]
+				  || lastTrend == TradeSafe3.Direction.Up   && Math.Min(High[0], Low[0]) <= Swing(5).SwingLow[0];
+
+				if ( ls )
+				{
+					newTrend = TradeSafe3.Direction.None;
+					method = TradeSafe3.BreakoutMethod.Lost;
+				}
+			}
+
+            // Set the trend data series
+			Trend[0] = newTrend;
+
+            // If either of the trend reversal variables turned out true, then
+            // we save the reversal bar and return true, notifying the caller
+            // that we've found a trend reversal
+			if ((co || sw || ls) && newTrend != lastTrend)
+			{
+				lastReversalIdx = CurrentBar;
+				return true;
+			}
+
+			return false;
+		}
+		#endregion
+
+        #region Properties
+        [Browsable(false)]
+        [XmlIgnore()]
+        public TradeSafe3.BreakoutMethod Method
+        {
+            get { return method; }
+        }
+
+		[Browsable(false)]
+        [XmlIgnore()]
+        public TradeSafe3.Box Box
+        {
+            get { return box; }
+        }
+
+		[Browsable(false)]
+        [XmlIgnore()]
+        public Series<TradeSafe3.Direction> Trend
+        {
+            get { return trendValues; }
+        }
+
+		[Browsable(false)]
+        [XmlIgnore()]
+        public virtual bool PlotBox
+        {
+            get { return plotBox; }
+			set { plotBox = value; }
+        }
+		#endregion
 	}
 }
 
@@ -752,19 +1009,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
-		private TradeSafe2Headless[] cacheTradeSafe2Headless;
-		public TradeSafe2Headless TradeSafe2Headless()
+		private TradeSafe3Headless[] cacheTradeSafe3Headless;
+		public TradeSafe3Headless TradeSafe3Headless()
 		{
-			return TradeSafe2Headless(Input);
+			return TradeSafe3Headless(Input);
 		}
 
-		public TradeSafe2Headless TradeSafe2Headless(ISeries<double> input)
+		public TradeSafe3Headless TradeSafe3Headless(ISeries<double> input)
 		{
-			if (cacheTradeSafe2Headless != null)
-				for (int idx = 0; idx < cacheTradeSafe2Headless.Length; idx++)
-					if (cacheTradeSafe2Headless[idx] != null &&  cacheTradeSafe2Headless[idx].EqualsInput(input))
-						return cacheTradeSafe2Headless[idx];
-			return CacheIndicator<TradeSafe2Headless>(new TradeSafe2Headless(), input, ref cacheTradeSafe2Headless);
+			if (cacheTradeSafe3Headless != null)
+				for (int idx = 0; idx < cacheTradeSafe3Headless.Length; idx++)
+					if (cacheTradeSafe3Headless[idx] != null &&  cacheTradeSafe3Headless[idx].EqualsInput(input))
+						return cacheTradeSafe3Headless[idx];
+			return CacheIndicator<TradeSafe3Headless>(new TradeSafe3Headless(), input, ref cacheTradeSafe3Headless);
 		}
 	}
 }
@@ -773,14 +1030,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.TradeSafe2Headless TradeSafe2Headless()
+		public Indicators.TradeSafe3Headless TradeSafe3Headless()
 		{
-			return indicator.TradeSafe2Headless(Input);
+			return indicator.TradeSafe3Headless(Input);
 		}
 
-		public Indicators.TradeSafe2Headless TradeSafe2Headless(ISeries<double> input )
+		public Indicators.TradeSafe3Headless TradeSafe3Headless(ISeries<double> input )
 		{
-			return indicator.TradeSafe2Headless(input);
+			return indicator.TradeSafe3Headless(input);
 		}
 	}
 }
@@ -789,14 +1046,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.TradeSafe2Headless TradeSafe2Headless()
+		public Indicators.TradeSafe3Headless TradeSafe3Headless()
 		{
-			return indicator.TradeSafe2Headless(Input);
+			return indicator.TradeSafe3Headless(Input);
 		}
 
-		public Indicators.TradeSafe2Headless TradeSafe2Headless(ISeries<double> input )
+		public Indicators.TradeSafe3Headless TradeSafe3Headless(ISeries<double> input )
 		{
-			return indicator.TradeSafe2Headless(input);
+			return indicator.TradeSafe3Headless(input);
 		}
 	}
 }
