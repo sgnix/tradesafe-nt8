@@ -85,8 +85,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		Rectangle ir;
 
 		// Parameters
-		Brush   boxColor 	= Brushes.Blue;
-		Brush   shadowColor = Brushes.Gray;
+		Brush   boxBrush 	= Brushes.Blue;
+		Brush   shadowBrush = Brushes.Gray;
 		bool 	textAlerts 	= true;
 		bool    soundAlerts = true;
 		bool	lastOnly    = true;
@@ -134,27 +134,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 			// play. It remembers if the current bar was a trend change bar
 			// and doesn't allow the trenc color to paint over it.
 			if (lastMethod == TradeSafe3.BreakoutMethod.Crossover)
-				BackColor = Brushes.Crimson;
+				BackBrush = Brushes.Crimson;
 			else if (lastMethod == TradeSafe3.BreakoutMethod.Swing)
-				BackColor = Brushes.SlateGray;
+				BackBrush = Brushes.SlateGray;
 			else if (lastMethod == TradeSafe3.BreakoutMethod.Both)
-				BackColor = Brushes.Black;
+				BackBrush = Brushes.Black;
 			else if (lastMethod == TradeSafe3.BreakoutMethod.Lost)
-				BackColor = Brushes.Teal;
+				BackBrush = Brushes.Teal;
 			else if (trendChangeBar != CurrentBar && Trend[0] == TradeSafe3.Direction.Up)
-				BackColor = Brushes.LightGreen;
+				BackBrush = Brushes.LightGreen;
 			else if (trendChangeBar != CurrentBar && Trend[0] == TradeSafe3.Direction.Down)
-				BackColor = Brushes.LightPink;
+				BackBrush = Brushes.LightPink;
 
 			lastMethod = TradeSafe3.BreakoutMethod.None;
 
 			if (Box.State != TradeSafe3.State.None && Box.State != TradeSafe3.State.Canceled)
 			{
 				int r = CurrentBar - Box.ReferenceBar;
-				DrawDiamond(refTag, false, r, High[r] + TickSize, boxColor);
-				ir = DrawRectangle(boxTag, true, CurrentBar - Box.StartBar, Box.StartY, CurrentBar - Box.EndBar, Box.EndY, Brushes.Transparent, boxColor, 2);
-				ir.Pen.Width = 1;
-				ir.Pen.DashStyle = DashStyles.Solid;
+				Draw.Diamond(this, refTag, false, r, High[r] + TickSize, boxBrush);
+				ir = Draw.Rectangle(this, boxTag, true, CurrentBar - Box.StartBar, Box.StartY, CurrentBar - Box.EndBar, Box.EndY, Brushes.Transparent, boxBrush, 2);
+				ir.OutlineStroke.Pen.Thickness = 1;
+				ir.OutlineStroke.Pen.DashStyle = DashStyles.Solid;
 			}
 
 		}
@@ -194,8 +194,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			return String.Format(@"{0}{1}-{2}{3}-{4}-{5}.wav",
 				System.IO.Path.GetTempPath(),
 				Instrument.MasterInstrument.Name,
-				Bars.Period.Value,
-				Bars.Period.Id,
+				BarsPeriod.Value,
+				BarsPeriod.GetType(),
 				synth.Voice.Id,
 				key);
 		}
@@ -204,7 +204,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		#region AlertText
 		string AlertText(AlertType key)
 		{
-			return String.Format("{0}, {1} - {2}", Instrument.MasterInstrument.Name, Bars.Period.ToString(), alerts[key]);
+			return String.Format("{0}, {1} - {2}", Instrument.MasterInstrument.Name, BarsPeriod, alerts[key]);
 		}
 		#endregion
 
@@ -213,7 +213,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			lastMethod = Method;
 			trendChangeBar = CurrentBar;
-			Announce(Trend[0] == Direction.None ? AlertType.TrendLost : AlertType.Reversal);
+			Announce(Trend[0] == TradeSafe3.Direction.None ? AlertType.TrendLost : AlertType.Reversal);
 		}
 
 		protected override void OnNewCongestion()
@@ -258,12 +258,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 		#region DrawShadow
 		void DrawShadow()
 		{
-			if ( ShadowColor != Color.Empty && ShadowColor != Color.Transparent && ir != null )
+			if ( ShadowBrush != Brushes.Transparent && ir != null )
 			{
 				var tag = "shadow_" + Time[0].ToString("HH:mm:ss");
-				var shadow = DrawRectangle(tag, true, ir.StartBarsAgo, ir.StartY, ir.EndBarsAgo, ir.EndY, Color.Transparent, ShadowColor, 2);
-				shadow.Pen.DashStyle = DashStyle.Dash;
-				shadow.Pen.Width = 1;
+				var shadow = Draw.Rectangle(this, tag, true, ir.StartAnchor.BarsAgo, ir.StartAnchor.Price, ir.EndAnchor.BarsAgo, ir.EndAnchor.Price, Brushes.Transparent, ShadowBrush, 2);
+				shadow.OutlineStroke.Pen.DashStyle = DashStyles.Dash;
+				shadow.OutlineStroke.Pen.Thickness = 1;
 			}
 		}
 		#endregion
@@ -273,36 +273,36 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			var soundfile = soundAlerts ? AlertFilename(key) : "";
 			if (textAlerts)
-				Alert(key.ToString(), NinjaTrader.Cbi.Priority.High, AlertText(key), soundfile, 1, Color.White, boxColor);
+				Alert(key.ToString(), Priority.High, AlertText(key), soundfile, 1, Brushes.White, boxBrush);
 		}
 		#endregion
 
         #region Properties
 		[XmlIgnore()]
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Current congestion box", GroupName = "Colors")]
-		[Description("The color of the congestion box, alerts and chart markers.")]	
-		public Brush BoxColor {
-			get { return boxColor; }
-			set { boxColor = value; }
+		[Description("The color of the congestion box, alerts and chart markers.")]
+		public Brush BoxBrush {
+			get { return boxBrush; }
+			set { boxBrush = value; }
 		}
 
 		[Browsable(false)]
-		public string BoxColorSerialize {
-			get { return Serialize.BrushToString(boxColor); }
-			set { boxColor = Serialize.StringToBrush(value); }
+		public string BoxBrushSerialize {
+			get { return Serialize.BrushToString(boxBrush); }
+			set { boxBrush = Serialize.StringToBrush(value); }
 		}
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Expired congestion box", GroupName = "Colors")]
 		[Description("The color of the congestion box after it's no longer active.")]
-		public Brush ShadowColor {
-			get { return shadowColor; }
-			set { shadowColor = value; }
+		public Brush ShadowBrush {
+			get { return shadowBrush; }
+			set { shadowBrush = value; }
 		}
 
 		[Browsable(false)]
-		public string ShadowColorSerialize {
-			get { return Serialize.BrushToString(shadowColor); }
-			set { shadowColor = Serialize.StringToBrush(value); }
+		public string ShadowBrushSerialize {
+			get { return Serialize.BrushToString(shadowBrush); }
+			set { shadowBrush = Serialize.StringToBrush(value); }
 		}
 
 		[Display(ResourceType = typeof(Custom.Resource), Name = "Text alerts", GroupName = "Alerts")]
@@ -345,6 +345,16 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
