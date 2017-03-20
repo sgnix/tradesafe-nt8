@@ -195,7 +195,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				System.IO.Path.GetTempPath(),
 				Instrument.MasterInstrument.Name,
 				BarsPeriod.Value,
-				BarsPeriod.GetType(),
+				BarsPeriod.BaseBarsPeriodType,
 				synth.Voice.Id,
 				key);
 		}
@@ -345,6 +345,10 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
 
 
 
