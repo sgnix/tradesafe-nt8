@@ -3,22 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml.Serialization;
 using System.Speech.Synthesis;
 using NinjaTrader.Cbi;
 using NinjaTrader.Gui;
-using NinjaTrader.Gui.Chart;
-using NinjaTrader.Gui.SuperDom;
-using NinjaTrader.Gui.Tools;
 using NinjaTrader.Data;
-using NinjaTrader.NinjaScript;
-using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
@@ -52,7 +42,7 @@ public class VoiceConverter : TypeConverter
 //This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
 {
-	public class TradeSafe3Trend : TradeSafe3Headless
+    public class TradeSafe3Trend : TradeSafe3Headless
 	{
 		enum AlertType { None, Reversal, TrendLost, Congestion, Breakout, Reset, Fakeout, Confirmed, Canceled};
 
@@ -100,7 +90,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (State == State.SetDefaults)
 			{
 				Description	= @"An implementation of Michael Guess' TradeSafe trend change indicator.";
-				Name	   	= "TradeSafe3Trend";
+				Name	   	= "TradeSafe_Trend";
 			}
 			else if (State == State.Configure)
 			{
@@ -149,14 +139,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			lastMethod = TradeSafe3.BreakoutMethod.None;
 
 			if (Box.State != TradeSafe3.State.None && Box.State != TradeSafe3.State.Canceled)
-			{
-				int r = CurrentBar - Box.ReferenceBar;
-				Draw.Diamond(this, refTag, false, r, High[r] + TickSize, boxBrush);
-				ir = Draw.Rectangle(this, boxTag, true, CurrentBar - Box.StartBar, Box.StartY, CurrentBar - Box.EndBar, Box.EndY, Brushes.Transparent, boxBrush, 2);
-				ir.OutlineStroke.Pen.Thickness = 1;
-				ir.OutlineStroke.Pen.DashStyle = DashStyles.Solid;
-			}
-
+				DrawMainBox();
 		}
 		#endregion
 
@@ -254,6 +237,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 			RemoveDrawObject(boxTag);
 		}
 		#endregion
+		
+		#region DrawMainBox
+		void DrawMainBox()
+		{
+			int r = CurrentBar - Box.ReferenceBar;
+			Draw.Diamond(this, refTag, false, r, High[r] + TickSize, boxBrush, true);
+			ir = Draw.Rectangle(this, boxTag, true, CurrentBar - Box.StartBar, Box.StartY, CurrentBar - Box.EndBar, Box.EndY, Brushes.Transparent, boxBrush, 20, true);
+		}
+		#endregion
 
 		#region DrawShadow
 		void DrawShadow()
@@ -261,9 +253,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if ( ShadowBrush != Brushes.Transparent && ir != null )
 			{
 				var tag = "shadow_" + Time[0].ToString("HH:mm:ss");
-				var shadow = Draw.Rectangle(this, tag, true, ir.StartAnchor.BarsAgo, ir.StartAnchor.Price, ir.EndAnchor.BarsAgo, ir.EndAnchor.Price, Brushes.Transparent, ShadowBrush, 2);
-				shadow.OutlineStroke.Pen.DashStyle = DashStyles.Dash;
-				shadow.OutlineStroke.Pen.Thickness = 1;
+				var shadow = Draw.Rectangle(this, tag, true, ir.StartAnchor.BarsAgo, ir.StartAnchor.Price, ir.EndAnchor.BarsAgo, ir.EndAnchor.Price, Brushes.Transparent, ShadowBrush, 20, true);
 			}
 		}
 		#endregion
@@ -345,6 +335,21 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
