@@ -68,7 +68,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		// Alerts and speech
 		SpeechSynthesizer synth;
-		string voice;
 		Dictionary<AlertType, string> alerts;
 
 		// Currently drawn box
@@ -95,7 +94,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			else if (State == State.Configure)
 			{
                 synth = new SpeechSynthesizer();
-                voice = synth.Voice.Name;
+                Voice = synth.Voice.Name;
                 alerts = new Dictionary<AlertType, string>();
 			}
             else if (State == State.DataLoaded)
@@ -111,12 +110,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (lastOnly && Bars.Count - CurrentBar > maxLastBar)
 				return;
 
-			try {
-				base.OnBarUpdate();
-			}
-			catch (Exception e) {
-				Print(e.ToString());
-			}
+			base.OnBarUpdate();
 
 			// This method is processed on each tick (not on bar close).
 			// Because of that, we need to prevent the trend color overwrite
@@ -155,7 +149,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			alerts.Add(AlertType.Confirmed,  "breakout confirmed");
 			alerts.Add(AlertType.Canceled,   "congestion canceled");
 
-			synth.SelectVoice(voice);
+			synth.SelectVoice(Voice);
 
 			foreach(KeyValuePair<AlertType, string> alert in alerts)
 			{
@@ -269,8 +263,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         #region Properties
 		[XmlIgnore()]
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Current congestion box", GroupName = "Colors")]
-		[Description("The color of the congestion box, alerts and chart markers.")]
+		[Display(Name = "Current congestion box", GroupName = "Colors")]
 		public Brush BoxBrush {
 			get { return boxBrush; }
 			set { boxBrush = value; }
@@ -282,8 +275,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 			set { boxBrush = Serialize.StringToBrush(value); }
 		}
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Expired congestion box", GroupName = "Colors")]
-		[Description("The color of the congestion box after it's no longer active.")]
+		[Display(Name = "Expired congestion box", GroupName = "Colors")]
+		[XmlIgnore()]
 		public Brush ShadowBrush {
 			get { return shadowBrush; }
 			set { shadowBrush = value; }
@@ -295,38 +288,32 @@ namespace NinjaTrader.NinjaScript.Indicators
 			set { shadowBrush = Serialize.StringToBrush(value); }
 		}
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Text alerts", GroupName = "Alerts")]
-		[Description("Post text alerts in the alerts window.")]
+		[Display(Name = "Text alerts", GroupName = "Alerts")]
 		public bool TextAlerts {
 			get { return textAlerts; }
 			set { textAlerts = value; }
 		}
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Sound alerts", GroupName = "Alerts")]
-		[Description("Play sound alerts for all events.")]
+		[Display(Name = "Sound alerts", GroupName = "Alerts")]
 		public bool SoundAlerts {
 			get { return soundAlerts; }
 			set { soundAlerts = value; }
 		}
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Voice", GroupName = "Alerts")]
-		[Description("Choose the voice for the generated audio files")]
+		[Display(Name = "Voice", GroupName = "Alerts")]
 		[TypeConverter(typeof(VoiceConverter))]
 		public string Voice {
-			get { return voice; }
-			set { voice = value; }
+			get; set;
 		}
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Use last 60 bars only", GroupName = "Parameters")]
-		[Description("Reduce system load and increase speed by looking for congestion only in the last 60 bars")]
+		[Display(Name = "Use last 60 bars only", GroupName = "Parameters")]
 		public bool LastOnly {
 			get { return lastOnly; }
 			set { lastOnly = value; }
 		}
 
-		[Display(ResourceType = typeof(Custom.Resource), Name = "Plot congestion boxes", GroupName = "Parameters")]
-		[Description("Enable or disable the plotting of congestion boxes")]
-		[Browsable(true)]
+		[Display(Name = "Plot congestion boxes", GroupName = "Parameters")]
+		[Browsable(true)]	// do not remove! this overrides base	
 		public override bool PlotBox {
 			get { return base.PlotBox; }
 			set { base.PlotBox = value; }
@@ -335,6 +322,23 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
