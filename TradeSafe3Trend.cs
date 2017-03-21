@@ -263,7 +263,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         #region Properties
 		[XmlIgnore()]
-		[Display(Name = "Current congestion box", GroupName = "Colors")]
+		[Display(Name = "Current congestion box", GroupName = "Colors", Description = "The color of the congestion box, alerts and chart markers.")]
 		public Brush BoxBrush {
 			get { return boxBrush; }
 			set { boxBrush = value; }
@@ -275,7 +275,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			set { boxBrush = Serialize.StringToBrush(value); }
 		}
 
-		[Display(Name = "Expired congestion box", GroupName = "Colors")]
+		[Display(Name = "Expired congestion box", GroupName = "Colors", Description = "The color of the congestion box after it's no longer active.")]
 		[XmlIgnore()]
 		public Brush ShadowBrush {
 			get { return shadowBrush; }
@@ -288,31 +288,31 @@ namespace NinjaTrader.NinjaScript.Indicators
 			set { shadowBrush = Serialize.StringToBrush(value); }
 		}
 
-		[Display(Name = "Text alerts", GroupName = "Alerts")]
+		[Display(Name = "Text alerts", GroupName = "Alerts", Description = "Show text alerts in the alerts window.")]
 		public bool TextAlerts {
 			get { return textAlerts; }
 			set { textAlerts = value; }
 		}
 
-		[Display(Name = "Sound alerts", GroupName = "Alerts")]
+		[Display(Name = "Sound alerts", GroupName = "Alerts", Description = "Play sound alerts for all events.")]
 		public bool SoundAlerts {
 			get { return soundAlerts; }
 			set { soundAlerts = value; }
 		}
 
-		[Display(Name = "Voice", GroupName = "Alerts")]
+		[Display(Name = "Voice", GroupName = "Alerts", Description = "Choose the voice for the generated audio files")]
 		[TypeConverter(typeof(VoiceConverter))]
 		public string Voice {
 			get; set;
 		}
 
-		[Display(Name = "Use last 60 bars only", GroupName = "Parameters")]
+		[Display(Name = "Use last 60 bars only", GroupName = "Parameters", Description = "Reduce system load and increase speed by looking for congestion only in the last 60 bars")]
 		public bool LastOnly {
 			get { return lastOnly; }
 			set { lastOnly = value; }
 		}
 
-		[Display(Name = "Plot congestion boxes", GroupName = "Parameters")]
+		[Display(Name = "Plot congestion boxes", GroupName = "Parameters", Description = "Enable or disable the plotting of congestion boxes")]
 		[Browsable(true)]	// do not remove! this overrides base	
 		public override bool PlotBox {
 			get { return base.PlotBox; }
@@ -322,6 +322,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
 
 
 
