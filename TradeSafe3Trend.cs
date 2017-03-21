@@ -72,13 +72,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		// Currently drawn box
 		Rectangle ir;
-
-		// Parameters
-		Brush   boxBrush 	= Brushes.Blue;
-		Brush   shadowBrush = Brushes.Gray;
-		bool 	textAlerts 	= true;
-		bool    soundAlerts = true;
-		bool	lastOnly    = true;
         #endregion
 
 		#region OnStateChange
@@ -90,6 +83,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{
 				Description	= @"An implementation of Michael Guess' TradeSafe trend change indicator.";
 				Name	   	= "TradeSafe_Trend";
+				BoxBrush 	= Brushes.Blue;
+				ShadowBrush = Brushes.Gray;
+				TextAlerts 	= true;
+				SoundAlerts = true;
+				LastOnly    = true;
 			}
 			else if (State == State.Configure)
 			{
@@ -107,7 +105,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		#region OnBarUpdate
 		protected override void OnBarUpdate()
 		{
-			if (lastOnly && Bars.Count - CurrentBar > maxLastBar)
+			if (LastOnly && Bars.Count - CurrentBar > maxLastBar)
 				return;
 
 			base.OnBarUpdate();
@@ -236,8 +234,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 		void DrawMainBox()
 		{
 			int r = CurrentBar - Box.ReferenceBar;
-			Draw.Diamond(this, refTag, false, r, High[r] + TickSize, boxBrush, true);
-			ir = Draw.Rectangle(this, boxTag, true, CurrentBar - Box.StartBar, Box.StartY, CurrentBar - Box.EndBar, Box.EndY, Brushes.Transparent, boxBrush, 20, true);
+			Draw.Diamond(this, refTag, false, r, High[r] + TickSize, BoxBrush, true);
+			ir = Draw.Rectangle(this, boxTag, true, CurrentBar - Box.StartBar, Box.StartY, CurrentBar - Box.EndBar, Box.EndY, Brushes.Transparent, BoxBrush, 20, true);
 		}
 		#endregion
 
@@ -255,9 +253,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 		#region Announce
 		void Announce(AlertType key)
 		{
-			var soundfile = soundAlerts ? AlertFilename(key) : "";
-			if (textAlerts)
-				Alert(key.ToString(), Priority.High, AlertText(key), soundfile, 1, Brushes.White, boxBrush);
+			var soundfile = SoundAlerts ? AlertFilename(key) : "";
+			if (TextAlerts)
+				Alert(key.ToString(), Priority.High, AlertText(key), soundfile, 1, Brushes.White, BoxBrush);
 		}
 		#endregion
 
@@ -265,39 +263,35 @@ namespace NinjaTrader.NinjaScript.Indicators
 		[XmlIgnore()]
 		[Display(Name = "Current congestion box", GroupName = "Colors", Description = "The color of the congestion box, alerts and chart markers.")]
 		public Brush BoxBrush {
-			get { return boxBrush; }
-			set { boxBrush = value; }
+			get; set;
 		}
 
 		[Browsable(false)]
 		public string BoxBrushSerialize {
-			get { return Serialize.BrushToString(boxBrush); }
-			set { boxBrush = Serialize.StringToBrush(value); }
+			get { return Serialize.BrushToString(BoxBrush); }
+			set { BoxBrush = Serialize.StringToBrush(value); }
 		}
 
 		[Display(Name = "Expired congestion box", GroupName = "Colors", Description = "The color of the congestion box after it's no longer active.")]
 		[XmlIgnore()]
 		public Brush ShadowBrush {
-			get { return shadowBrush; }
-			set { shadowBrush = value; }
+			get; set;		
 		}
 
 		[Browsable(false)]
 		public string ShadowBrushSerialize {
-			get { return Serialize.BrushToString(shadowBrush); }
-			set { shadowBrush = Serialize.StringToBrush(value); }
+			get { return Serialize.BrushToString(ShadowBrush); }
+			set { ShadowBrush = Serialize.StringToBrush(value); }
 		}
 
 		[Display(Name = "Text alerts", GroupName = "Alerts", Description = "Show text alerts in the alerts window.")]
 		public bool TextAlerts {
-			get { return textAlerts; }
-			set { textAlerts = value; }
+			get; set;
 		}
 
 		[Display(Name = "Sound alerts", GroupName = "Alerts", Description = "Play sound alerts for all events.")]
 		public bool SoundAlerts {
-			get { return soundAlerts; }
-			set { soundAlerts = value; }
+			get; set;
 		}
 
 		[Display(Name = "Voice", GroupName = "Alerts", Description = "Choose the voice for the generated audio files")]
@@ -308,8 +302,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		[Display(Name = "Use last 60 bars only", GroupName = "Parameters", Description = "Reduce system load and increase speed by looking for congestion only in the last 60 bars")]
 		public bool LastOnly {
-			get { return lastOnly; }
-			set { lastOnly = value; }
+			get; set;
 		}
 
 		[Display(Name = "Plot congestion boxes", GroupName = "Parameters", Description = "Enable or disable the plotting of congestion boxes")]
@@ -322,6 +315,8 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
 
 
 
