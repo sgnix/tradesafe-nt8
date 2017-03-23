@@ -12,32 +12,35 @@ using NinjaTrader.Data;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-#region VoiceConverter
-public class VoiceConverter : TypeConverter
+namespace TradeSafe3
 {
-
-	public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+	#region VoiceConverter
+	public class VoiceConverter : TypeConverter
 	{
-		if (context == null)
-			return null;
 
-		List<string> list = new List<string>();
-		var s = new SpeechSynthesizer();
-
-		foreach (InstalledVoice v in s.GetInstalledVoices())
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 		{
-			list.Add(v.VoiceInfo.Name);
+			if (context == null)
+				return null;
+
+			List<string> list = new List<string>();
+			var s = new SpeechSynthesizer();
+
+			foreach (InstalledVoice v in s.GetInstalledVoices())
+			{
+				list.Add(v.VoiceInfo.Name);
+			}
+
+			return new TypeConverter.StandardValuesCollection(list);
 		}
 
-		return new TypeConverter.StandardValuesCollection(list);
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+		{
+			return true;
+		}
 	}
-
-	public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
-	{
-		return true;
-	}
+	#endregion
 }
-#endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Indicators
@@ -48,9 +51,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         #region Constants
 		// Tagnames
-		const string boxTag   = "@congestion";
-		const string refTag   = "@refbar";
-		const string arrowTag = "@breakout-arrow";
+		const string boxTag   = "congestion";
+		const string refTag   = "refbar";
 
 		// Strings
 		const string strParameters = "Parameters";
@@ -69,9 +71,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		// Alerts and speech
 		SpeechSynthesizer synth;
 		Dictionary<AlertType, string> alerts;
-
-		// Currently drawn box
-		Rectangle ir;
+		
         #endregion
 
 		#region OnStateChange
@@ -84,7 +84,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 				Description	= @"An implementation of Michael Guess' TradeSafe trend change indicator.";
 				Name	   	= "TradeSafe_Trend";
 				BoxBrush 	= Brushes.Blue;
-				ShadowBrush = Brushes.Gray;
 				TextAlerts 	= true;
 				SoundAlerts = true;
 				LastOnly    = true;
@@ -194,7 +193,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected override void OnNewCongestion()
 		{
 			Announce(AlertType.Congestion);
-			DrawShadow();
 		}
 
 		protected override void OnBreakout()
@@ -221,35 +219,37 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			Announce(AlertType.Canceled);
 
-			// Shadow
-			DrawShadow();
-
 			RemoveDrawObject(refTag);
-			RemoveDrawObject(arrowTag);
 			RemoveDrawObject(boxTag);
+
 		}
 		#endregion
-		
+
 		#region DrawMainBox
 		void DrawMainBox()
 		{
-			int r = CurrentBar - Box.ReferenceBar;
-			Draw.Diamond(this, refTag, false, r, High[r] + TickSize, BoxBrush, true);
-			ir = Draw.Rectangle(this, boxTag, true, CurrentBar - Box.StartBar, Box.StartY, CurrentBar - Box.EndBar, Box.EndY, Brushes.Transparent, BoxBrush, 20, true);
-		}
-		#endregion
-
-		#region DrawShadow
-		void DrawShadow()
-		{
-			if ( ShadowBrush != Brushes.Transparent && ir != null )
+			if (PlotBox)
 			{
-				var tag = "shadow_" + Time[0].ToString("HH:mm:ss");
-				var shadow = Draw.Rectangle(this, tag, true, ir.StartAnchor.BarsAgo, ir.StartAnchor.Price, ir.EndAnchor.BarsAgo, ir.EndAnchor.Price, Brushes.Transparent, ShadowBrush, 20, true);
+				int    x1 = CurrentBar - Box.StartBar;
+				double y1 = Box.StartY;
+				int    x2 = CurrentBar - Box.EndBar;
+				double y2 = Box.EndY;
+				int    r  = CurrentBar - Box.ReferenceBar; // box reference bar
+				
+				var shadowTag   = "shadow_" + r.ToString();
+				var borderBrush = Brushes.Transparent;
+
+				// Now draw the shadow
+                Draw.Rectangle(this, shadowTag, true, x1, y1, x2, y2, borderBrush, Brushes.LightGray, 7, true);
+				
+				// Draw the current box and the diamond on top of the reference bar
+				Draw.Diamond(this, refTag, false, r, High[r] + TickSize, BoxBrush, true);
+				Draw.Rectangle(this, boxTag, true, x1, y1, x2, y2, BoxBrush, Brushes.Transparent, 20, true);
+
 			}
 		}
 		#endregion
-
+		
 		#region Announce
 		void Announce(AlertType key)
 		{
@@ -261,7 +261,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         #region Properties
 		[XmlIgnore()]
-		[Display(Name = "Current congestion box", GroupName = "Colors", Description = "The color of the congestion box, alerts and chart markers.")]
+		[Display(Name = "Color", GroupName = "Color", Description = "The color of the congestion box, alerts and chart markers.")]
 		public Brush BoxBrush {
 			get; set;
 		}
@@ -270,18 +270,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public string BoxBrushSerialize {
 			get { return Serialize.BrushToString(BoxBrush); }
 			set { BoxBrush = Serialize.StringToBrush(value); }
-		}
-
-		[Display(Name = "Expired congestion box", GroupName = "Colors", Description = "The color of the congestion box after it's no longer active.")]
-		[XmlIgnore()]
-		public Brush ShadowBrush {
-			get; set;		
-		}
-
-		[Browsable(false)]
-		public string ShadowBrushSerialize {
-			get { return Serialize.BrushToString(ShadowBrush); }
-			set { ShadowBrush = Serialize.StringToBrush(value); }
 		}
 
 		[Display(Name = "Text alerts", GroupName = "Alerts", Description = "Show text alerts in the alerts window.")]
@@ -295,7 +283,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 
 		[Display(Name = "Voice", GroupName = "Alerts", Description = "Choose the voice for the generated audio files")]
-		[TypeConverter(typeof(VoiceConverter))]
+		[TypeConverter(typeof(TradeSafe3.VoiceConverter))]
 		public string Voice {
 			get; set;
 		}
@@ -306,7 +294,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		}
 
 		[Display(Name = "Plot congestion boxes", GroupName = "Parameters", Description = "Enable or disable the plotting of congestion boxes")]
-		[Browsable(true)]	// do not remove! this overrides base	
+		[Browsable(true)]	// do not remove! this overrides base
 		public override bool PlotBox {
 			get { return base.PlotBox; }
 			set { base.PlotBox = value; }
@@ -315,6 +303,57 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
