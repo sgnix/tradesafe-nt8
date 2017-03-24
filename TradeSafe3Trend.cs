@@ -240,8 +240,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				// Draw the current box and the diamond on top of the reference bar
 				Draw.Diamond(this, refTag, false, r, High[r] + TickSize, BoxBrush, true);
-				Rectangle re = Draw.Rectangle(this, boxTag, true, x1, y1, x2, y2, BoxBrush, BoxBrush, 25, true);
-				re.OutlineStroke.DashStyleHelper = DashStyleHelper.Dot;
+				Rectangle re = Draw.Rectangle(this, boxTag, true, x1, y1, x2, y2, Brushes.Transparent, BoxBrush, 25, true);
 				re.OutlineStroke.Width = 1;
 			}
 		}
@@ -250,18 +249,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 		#region DrawShadowBox
         void DrawShadowBox()
         {
-
-            if (PlotBox)
+            if (!PlotBox) return;
+            var r = (Rectangle)DrawObjects[boxTag];
+            if (r != null)
             {
-                var r = (Rectangle)DrawObjects[boxTag];
-                if (r != null)
-                {
-                    var a = r.StartAnchor;
-                    var b = r.EndAnchor;
-                    string shadowTag   = String.Format("shadow_{0}_{1}", a.DrawnOnBar, b.DrawnOnBar);
-                    Brush  borderBrush = Brushes.Transparent;
-                    Draw.Rectangle(this, shadowTag, true, a.BarsAgo, a.Price, b.BarsAgo, b.Price, borderBrush, BoxBrush, 5, true);
-                }
+                var a = r.StartAnchor;
+                var b = r.EndAnchor;
+                string shadowTag   = String.Format("shadow_{0}_{1}", a.DrawnOnBar, b.DrawnOnBar);
+                Brush  borderBrush = Brushes.Transparent;
+                Draw.Rectangle(this, shadowTag, true, a.BarsAgo, a.Price, b.BarsAgo, b.Price, borderBrush, BoxBrush, 5, true);
             }
         }
 		#endregion
@@ -319,6 +315,9 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
 
 
 
