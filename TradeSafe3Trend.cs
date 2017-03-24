@@ -82,7 +82,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			if (State == State.SetDefaults)
 			{
 				Description	= @"An implementation of Michael Guess' TradeSafe trend change indicator.";
-				Name	   	= "TradeSafe_Trend";
+				Name	   	= "TradeSafe3Trend";
 				BoxBrush 	= Brushes.Blue;
 				TextAlerts 	= true;
 				SoundAlerts = true;
@@ -315,6 +315,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
 
 
 
