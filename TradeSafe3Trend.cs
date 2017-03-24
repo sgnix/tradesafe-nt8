@@ -71,7 +71,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		// Alerts and speech
 		SpeechSynthesizer synth;
 		Dictionary<AlertType, string> alerts;
-		
+
         #endregion
 
 		#region OnStateChange
@@ -193,6 +193,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected override void OnNewCongestion()
 		{
 			Announce(AlertType.Congestion);
+			DrawShadowBox();
 		}
 
 		protected override void OnBreakout()
@@ -218,6 +219,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		protected override void OnCongestionCanceled()
 		{
 			Announce(AlertType.Canceled);
+			DrawShadowBox();
 
 			RemoveDrawObject(refTag);
 			RemoveDrawObject(boxTag);
@@ -235,21 +237,35 @@ namespace NinjaTrader.NinjaScript.Indicators
 				int    x2 = CurrentBar - Box.EndBar;
 				double y2 = Box.EndY;
 				int    r  = CurrentBar - Box.ReferenceBar; // box reference bar
-				
-				var shadowTag   = "shadow_" + r.ToString();
-				var borderBrush = Brushes.Transparent;
 
-				// Now draw the shadow
-                Draw.Rectangle(this, shadowTag, true, x1, y1, x2, y2, borderBrush, Brushes.LightGray, 7, true);
-				
 				// Draw the current box and the diamond on top of the reference bar
 				Draw.Diamond(this, refTag, false, r, High[r] + TickSize, BoxBrush, true);
-				Draw.Rectangle(this, boxTag, true, x1, y1, x2, y2, BoxBrush, Brushes.Transparent, 20, true);
-
+				Rectangle re = Draw.Rectangle(this, boxTag, true, x1, y1, x2, y2, BoxBrush, BoxBrush, 25, true);
+				re.OutlineStroke.DashStyleHelper = DashStyleHelper.Dot;
+				re.OutlineStroke.Width = 1;
 			}
 		}
 		#endregion
-		
+
+		#region DrawShadowBox
+        void DrawShadowBox()
+        {
+
+            if (PlotBox)
+            {
+                var r = (Rectangle)DrawObjects[boxTag];
+                if (r != null)
+                {
+                    var a = r.StartAnchor;
+                    var b = r.EndAnchor;
+                    string shadowTag   = String.Format("shadow_{0}_{1}", a.DrawnOnBar, b.DrawnOnBar);
+                    Brush  borderBrush = Brushes.Transparent;
+                    Draw.Rectangle(this, shadowTag, true, a.BarsAgo, a.Price, b.BarsAgo, b.Price, borderBrush, BoxBrush, 5, true);
+                }
+            }
+        }
+		#endregion
+
 		#region Announce
 		void Announce(AlertType key)
 		{
@@ -303,6 +319,19 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
