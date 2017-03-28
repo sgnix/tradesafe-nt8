@@ -69,7 +69,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		int trendChangeBar = -1;
 
 		// Alerts and speech
-		SpeechSynthesizer synth;
+		SpeechSynthesizer synth = new SpeechSynthesizer();
 		Dictionary<AlertType, string> alerts;
 
         #endregion
@@ -87,11 +87,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 				TextAlerts 	= true;
 				SoundAlerts = true;
 				LastOnly    = true;
+				Voice       = synth.Voice.Name;
 			}
 			else if (State == State.Configure)
 			{
-                synth = new SpeechSynthesizer();
-                Voice = synth.Voice.Name;
                 alerts = new Dictionary<AlertType, string>();
 			}
             else if (State == State.DataLoaded)
@@ -315,6 +314,11 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
+
 
 
 
