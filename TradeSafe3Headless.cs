@@ -702,7 +702,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 	{
         #region Constants
         const int    atrAvg = 14;               // ATR days average
-        const double barHeightFactor = 2;       // Reference bar may not be taller than ATR * this
+        const double barHeightFactor = 2.5;       // Reference bar may not be taller than ATR * this
         #endregion
 
 		#region Variables
