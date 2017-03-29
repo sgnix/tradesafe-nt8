@@ -149,16 +149,6 @@ namespace TradeSafe3
         int breakBarIdx = 0;
         int confirmBarIdx = 0;
 
-        // User supplied function, computing the maximum height of the
-        // congestion reference bar.  The function must take IDataSeries and
-        // bar index and will return the maximum allowed bar height.
-		Func<ISeries<double>, int, double> MaxBarHeightFunc;
-
-		public Box(Func<ISeries<double>, int, double> mbh)
-		{
-			MaxBarHeightFunc = mbh;
-		}
-
         // Check if bar i closed inside the box
         bool BarClosedInside(Bar bar)
         {
@@ -221,7 +211,7 @@ namespace TradeSafe3
 
 				// Compute the average height of the bar using the user provided computing function.
 				// Note that the indexing is in "barsAgo" style, not absolute.
-				maxBarHeight = MaxBarHeightFunc(bars, bars.CurrentBar - idx[i]);
+				maxBarHeight = MaxBarHeightFunc(idx[i]);
 
 				// Only entertain bars that are less than X taller than
 				// the average height. Otherwise we may get a single very tall bar
@@ -476,6 +466,14 @@ namespace TradeSafe3
         {
             get { return confirmBarIdx; }
         }
+
+		// User supplied function, computing the maximum height of the
+        // congestion reference bar.  The function must take IDataSeries and
+        // bar index and will return the maximum allowed bar height.
+		public Func<int, double> MaxBarHeightFunc
+		{
+			get; set;
+		}
     }
 	#endregion
 
@@ -702,7 +700,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 	{
         #region Constants
         const int    atrAvg = 14;               // ATR days average
-        const double barHeightFactor = 2.5;       // Reference bar may not be taller than ATR * this
         #endregion
 
 		#region Variables
@@ -712,7 +709,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 		// Detect congestion
 		TradeSafe3.Box box;
-		bool plotBox = true;
 
 		// Index of the last reference bar, confirmation bar and breakout bar
 		int lastRefIdx      = -1;
@@ -743,6 +739,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				DrawVerticalGridLines						= false;
 				PaintPriceMarkers							= false;
 				IsSuspendedWhileInactive					= true;
+				BarHeightFactor								= 2.5; 		// Reference bar may not be taller than ATR * this
+				PlotBox										= true;
 			}
 			else if (State == State.Configure)
 			{
@@ -750,15 +748,15 @@ namespace NinjaTrader.NinjaScript.Indicators
                 swing     = new TradeSafe3.SwingBreakout(this);
                 trendValues = new Series<TradeSafe3.Direction>(this);
 
-                // Create function to be used to compute the average height of a bar.
+                box = new TradeSafe3.Box();
+
+				// Create function to be used to compute the average height of a bar.
                 // It passed into the Box constructor and used by the Box class to skip
                 // single bars that are too long, that create an unreasonably high congestion.
                 // Currently the Average True Range indicator is used to compute the height.
-                Func<ISeries<double>, int, double> r = delegate (ISeries<double> bars, int idxAgo)
-                {
-                    return ATR(bars, atrAvg)[idxAgo] * barHeightFactor;
-                };
-                box = new TradeSafe3.Box(r);
+				box.MaxBarHeightFunc = (int idx) => {
+                    return ATR(atrAvg)[CurrentBar - idx] * BarHeightFactor;
+				};
 
 
                 //VendorLicense("TradeSafe", "TradeSafe2Trend", "http://daytradesafe.com", "mguess@daytradesafe.com");
@@ -771,7 +769,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         {
 			if (CurrentBar < atrAvg) return;
 
-			if (plotBox)
+			if (PlotBox)
 			{
 				// If we're processing historical data, then we process all bars up
 				// to CurrentBar including it, because we know all bars have
@@ -980,9 +978,15 @@ namespace NinjaTrader.NinjaScript.Indicators
         [XmlIgnore()]
         public virtual bool PlotBox
         {
-            get { return plotBox; }
-			set { plotBox = value; }
+            get; set;
         }
+
+		[Browsable(false)]
+        [XmlIgnore()]
+		public virtual double BarHeightFactor
+		{
+			get; set;
+		}
 		#endregion
 	}
 }

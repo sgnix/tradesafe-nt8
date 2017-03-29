@@ -273,7 +273,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         #region Properties
 		[XmlIgnore()]
-		[Display(Name = "Color", GroupName = "Color", Description = "The color of the congestion box, alerts and chart markers.")]
+		[Display(Name = "Color", GroupName = "Parameters", Order = 1, Description = "The color of the congestion box, alerts and chart markers.")]
 		public Brush BoxBrush {
 			get; set;
 		}
@@ -283,38 +283,57 @@ namespace NinjaTrader.NinjaScript.Indicators
 			get { return Serialize.BrushToString(BoxBrush); }
 			set { BoxBrush = Serialize.StringToBrush(value); }
 		}
-
-		[Display(Name = "Text alerts", GroupName = "Alerts", Description = "Show text alerts in the alerts window.")]
-		public bool TextAlerts {
-			get; set;
-		}
-
-		[Display(Name = "Sound alerts", GroupName = "Alerts", Description = "Play sound alerts for all events.")]
-		public bool SoundAlerts {
-			get; set;
-		}
-
-		[Display(Name = "Voice", GroupName = "Alerts", Description = "Choose the voice for the generated audio files")]
-		[TypeConverter(typeof(TradeSafe3.VoiceConverter))]
-		public string Voice {
-			get; set;
-		}
-
-		[Display(Name = "Use last 60 bars only", GroupName = "Parameters", Description = "Reduce system load and increase speed by looking for congestion only in the last 60 bars")]
-		public bool LastOnly {
-			get; set;
-		}
-
-		[Display(Name = "Plot congestion boxes", GroupName = "Parameters", Description = "Enable or disable the plotting of congestion boxes")]
+		
+		[Display(Name = "Plot congestion boxes", Order = 2, GroupName = "Parameters", Description = "Enable or disable the plotting of congestion boxes")]
 		[Browsable(true)]	// do not remove! this overrides base
 		public override bool PlotBox {
 			get { return base.PlotBox; }
 			set { base.PlotBox = value; }
 		}
 
+		[Display(Name = "Bar Height Factor", Order = 3, GroupName = "Parameters", Description = "Congestion reference bars may not be taller than ATR(14) * this number")]
+		[Browsable(true)]	// do not remove! this overrides base
+		public override double BarHeightFactor
+		{
+			get; set;
+		}
+		
+		[Display(Name = "Text alerts", Order = 4, GroupName = "Parameters", Description = "Show text alerts in the alerts window.")]
+		public bool TextAlerts {
+			get; set;
+		}
+
+		[Display(Name = "Sound alerts", Order = 5, GroupName = "Parameters", Description = "Play sound alerts for all events.")]
+		public bool SoundAlerts {
+			get; set;
+		}
+
+		[Display(Name = "Voice", Order = 6, GroupName = "Parameters", Description = "Choose the voice for the generated audio files")]
+		[TypeConverter(typeof(TradeSafe3.VoiceConverter))]
+		public string Voice {
+			get; set;
+		}
+
+		[Display(Name = "Use last 60 bars only", Order = 7, GroupName = "Parameters", Description = "Reduce system load and increase speed by looking for congestion only in the last 60 bars")]
+		public bool LastOnly {
+			get; set;
+		}
+
         #endregion
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
