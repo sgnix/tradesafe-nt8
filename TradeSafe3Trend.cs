@@ -239,7 +239,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				// Draw the current box and the diamond on top of the reference bar
 				Draw.Diamond(this, refTag, false, r, High[r] + TickSize, BoxBrush, true);
-				Rectangle re = Draw.Rectangle(this, boxTag, true, x1, y1, x2, y2, Brushes.Transparent, BoxBrush, 25, true);
+				Rectangle re = Draw.Rectangle(this, boxTag, true, x1, y1, x2, y2, Brushes.Transparent, BoxBrush, 30, true);
 				re.OutlineStroke.Width = 1;
 			}
 		}
@@ -255,8 +255,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                 var a = r.StartAnchor;
                 var b = r.EndAnchor;
                 string shadowTag   = String.Format("shadow_{0}_{1}", a.DrawnOnBar, b.DrawnOnBar);
-                Brush  borderBrush = Brushes.Transparent;
-                Draw.Rectangle(this, shadowTag, true, a.BarsAgo, a.Price, b.BarsAgo, b.Price, borderBrush, BoxBrush, 5, true);
+                Rectangle rc = Draw.Rectangle(this, shadowTag, true, a.BarsAgo, a.Price, b.BarsAgo, b.Price, BoxBrush, Brushes.Transparent, 10, true);
+				rc.OutlineStroke.Width = 1;
+				rc.OutlineStroke.DashStyleHelper = DashStyleHelper.Dash;
             }
         }
 		#endregion
@@ -314,6 +315,17 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
