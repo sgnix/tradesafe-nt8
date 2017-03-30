@@ -32,7 +32,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			{
 				Description									= @"Risk and range";
 				Name										= "TradeSafe3RRR";
-				Calculate									= Calculate.OnBarClose;
+				Calculate									= Calculate.OnPriceChange;
 				IsOverlay									= false;
 				DisplayInDataBox							= true;
 				DrawOnPricePanel							= true;
@@ -66,7 +66,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double down = (Math.Max(Low[0] - ma, 0) / TickSize);
 			Rule21[0] = Math.Round(Math.Max(up, down));
 		}
-
+		
         #region Properties
         [Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
         [XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove

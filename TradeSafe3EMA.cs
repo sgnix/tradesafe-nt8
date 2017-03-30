@@ -46,9 +46,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 			}
 			else if (State == State.Configure)
 			{
+				var m21 = new Stroke(Brushes.Magenta, 2);
+				m21.DashStyleHelper = DashStyleHelper.Dash;
 				AddPlot(new Stroke(Brushes.Red, 1), PlotStyle.Line, "EMA7");
 				AddPlot(new Stroke(Brushes.Blue, 1), PlotStyle.Line, "EMA13");
-				AddPlot(new Stroke(Brushes.Magenta, 2), PlotStyle.Line, "EMA21");
+				AddPlot(m21, PlotStyle.Line, "EMA21");
 			}
 		}
 
