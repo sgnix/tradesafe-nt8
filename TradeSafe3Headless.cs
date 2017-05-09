@@ -152,7 +152,7 @@ namespace TradeSafe3
         // Check if bar i closed inside the box
         bool BarClosedInside(Bar bar)
         {
-            return endY < bar.Close && bar.Close < startY;
+            return endY <= bar.Close && bar.Close <= startY;
         }
 
         // Checks if the bar broke out of the box and sets dir to the direction of the BO
