@@ -257,7 +257,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 string shadowTag   = String.Format("shadow_{0}_{1}", a.DrawnOnBar, b.DrawnOnBar);
                 Rectangle rc = Draw.Rectangle(this, shadowTag, true, a.BarsAgo, a.Price, b.BarsAgo, b.Price, BoxBrush, Brushes.Transparent, 10, true);
 				rc.OutlineStroke.Width = 1;
-				rc.OutlineStroke.DashStyleHelper = DashStyleHelper.Dash;
+				rc.OutlineStroke.DashStyleHelper = DashStyleHelper.Dot;
             }
         }
 		#endregion
@@ -322,6 +322,8 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
 
 
 
