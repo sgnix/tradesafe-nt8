@@ -729,7 +729,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (State == State.SetDefaults)
 			{
-				Description									= @"Combined trend indicator that does not plot any drawings.";
+				Description									= @"Do not use this! It's needed by the trend indicator.";
 				Name										= "TradeSafe3Headless";
 				Calculate									= Calculate.OnPriceChange;
 				IsOverlay									= false;

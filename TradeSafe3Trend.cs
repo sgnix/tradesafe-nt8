@@ -88,7 +88,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				SoundAlerts = true;
 				LastOnly    = true;
 				Voice       = synth.Voice.Name;
-				VendorLicense("TradeSafe", "TradeSafe2Trend", "http://daytradesafe.com/", "mguess@daytradesafe.com");
+				VendorLicense("TradeSafe", Name, "http://daytradesafe.com/", "mguess@daytradesafe.com");
 			}
 			else if (State == State.Configure)
 			{
@@ -323,6 +323,9 @@ namespace NinjaTrader.NinjaScript.Indicators
         #endregion
 	}
 }
+
+
+
 
 
 
