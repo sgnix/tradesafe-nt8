@@ -22,7 +22,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it.
-namespace NinjaTrader.NinjaScript.Indicators
+namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
 {
 	public class TradeSafe3EMA : Indicator
 	{
@@ -93,19 +93,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 {
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
-		private TradeSafe3EMA[] cacheTradeSafe3EMA;
-		public TradeSafe3EMA TradeSafe3EMA()
+		private TradeSafeSuite.TradeSafe3EMA[] cacheTradeSafe3EMA;
+		public TradeSafeSuite.TradeSafe3EMA TradeSafe3EMA()
 		{
 			return TradeSafe3EMA(Input);
 		}
 
-		public TradeSafe3EMA TradeSafe3EMA(ISeries<double> input)
+		public TradeSafeSuite.TradeSafe3EMA TradeSafe3EMA(ISeries<double> input)
 		{
 			if (cacheTradeSafe3EMA != null)
 				for (int idx = 0; idx < cacheTradeSafe3EMA.Length; idx++)
 					if (cacheTradeSafe3EMA[idx] != null &&  cacheTradeSafe3EMA[idx].EqualsInput(input))
 						return cacheTradeSafe3EMA[idx];
-			return CacheIndicator<TradeSafe3EMA>(new TradeSafe3EMA(), input, ref cacheTradeSafe3EMA);
+			return CacheIndicator<TradeSafeSuite.TradeSafe3EMA>(new TradeSafeSuite.TradeSafe3EMA(), input, ref cacheTradeSafe3EMA);
 		}
 	}
 }
@@ -114,12 +114,12 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.TradeSafe3EMA TradeSafe3EMA()
+		public Indicators.TradeSafeSuite.TradeSafe3EMA TradeSafe3EMA()
 		{
 			return indicator.TradeSafe3EMA(Input);
 		}
 
-		public Indicators.TradeSafe3EMA TradeSafe3EMA(ISeries<double> input )
+		public Indicators.TradeSafeSuite.TradeSafe3EMA TradeSafe3EMA(ISeries<double> input )
 		{
 			return indicator.TradeSafe3EMA(input);
 		}
@@ -130,12 +130,12 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.TradeSafe3EMA TradeSafe3EMA()
+		public Indicators.TradeSafeSuite.TradeSafe3EMA TradeSafe3EMA()
 		{
 			return indicator.TradeSafe3EMA(Input);
 		}
 
-		public Indicators.TradeSafe3EMA TradeSafe3EMA(ISeries<double> input )
+		public Indicators.TradeSafeSuite.TradeSafe3EMA TradeSafe3EMA(ISeries<double> input )
 		{
 			return indicator.TradeSafe3EMA(input);
 		}

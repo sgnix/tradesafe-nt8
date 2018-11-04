@@ -22,7 +22,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it.
-namespace NinjaTrader.NinjaScript.Indicators
+namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
 {
 	public class TradeSafe3Risk : Indicator
 	{
@@ -30,7 +30,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (State == State.SetDefaults)
 			{
-				Description									= @"Risk and range";
+				Description									= @"Risk, Range and Rule21";
 				Name										= "TradeSafe3RRR";
 				Calculate									= Calculate.OnPriceChange;
 				IsOverlay									= false;
@@ -40,12 +40,19 @@ namespace NinjaTrader.NinjaScript.Indicators
 				DrawVerticalGridLines						= true;
 				PaintPriceMarkers							= true;
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
-				//Disable this property if your indicator requires custom values that cumulate with each new market data event.
-				//See Help Guide for additional information.
+
+                //Disable this property if your indicator requires custom
+                //values that cumulate with each new market data event.  See
+                //Help Guide for additional information.
 				IsSuspendedWhileInactive					= true;
-			}
-			else if (State == State.Configure)
-			{
+
+                // Configure plots here so they show in the dialog, which is
+                // needed in order to add this to the Market Analyzer.
+                //
+                // Each call to AddPlot adds a new Series<double> object to the
+                // Values collection.  The collections can be referenced by
+                // their index of creation, e.g.  Values[0] is the first
+                // created plot and it's of type Series<double>
 				AddPlot(new Stroke(Brushes.Red, 1), PlotStyle.Line, "Range");
 				AddPlot(new Stroke(Brushes.Blue, 1), PlotStyle.Line, "Risk");
 				AddPlot(new Stroke(Brushes.Magenta, 2), PlotStyle.Line, "Rule21");
@@ -66,7 +73,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 			double down = (Math.Max(Low[0] - ma, 0) / TickSize);
 			Rule21[0] = Math.Round(Math.Max(up, down));
 		}
-		
+
         #region Properties
         [Browsable(false)]	// this line prevents the data series from being displayed in the indicator properties dialog, do not remove
         [XmlIgnore()]		// this line ensures that the indicator can be saved/recovered as part of a chart template, do not remove
@@ -92,25 +99,26 @@ namespace NinjaTrader.NinjaScript.Indicators
 	}
 }
 
+
 #region NinjaScript generated code. Neither change nor remove.
 
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
-		private TradeSafe3Risk[] cacheTradeSafe3Risk;
-		public TradeSafe3Risk TradeSafe3Risk()
+		private TradeSafeSuite.TradeSafe3Risk[] cacheTradeSafe3Risk;
+		public TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk()
 		{
 			return TradeSafe3Risk(Input);
 		}
 
-		public TradeSafe3Risk TradeSafe3Risk(ISeries<double> input)
+		public TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input)
 		{
 			if (cacheTradeSafe3Risk != null)
 				for (int idx = 0; idx < cacheTradeSafe3Risk.Length; idx++)
 					if (cacheTradeSafe3Risk[idx] != null &&  cacheTradeSafe3Risk[idx].EqualsInput(input))
 						return cacheTradeSafe3Risk[idx];
-			return CacheIndicator<TradeSafe3Risk>(new TradeSafe3Risk(), input, ref cacheTradeSafe3Risk);
+			return CacheIndicator<TradeSafeSuite.TradeSafe3Risk>(new TradeSafeSuite.TradeSafe3Risk(), input, ref cacheTradeSafe3Risk);
 		}
 	}
 }
@@ -119,12 +127,12 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.TradeSafe3Risk TradeSafe3Risk()
+		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk()
 		{
 			return indicator.TradeSafe3Risk(Input);
 		}
 
-		public Indicators.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
+		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
 		{
 			return indicator.TradeSafe3Risk(input);
 		}
@@ -135,12 +143,12 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.TradeSafe3Risk TradeSafe3Risk()
+		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk()
 		{
 			return indicator.TradeSafe3Risk(Input);
 		}
 
-		public Indicators.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
+		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
 		{
 			return indicator.TradeSafe3Risk(input);
 		}
