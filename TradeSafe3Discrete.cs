@@ -23,13 +23,11 @@ using TradeSafe3;
 #endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it.
-namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
+namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class TradeSafe3Discrete : TradeSafe3Headless
 	{
 		
-		private Direction trend = Direction.None;
-
 		protected override void OnStateChange()
 		{
 			base.OnStateChange();
@@ -51,36 +49,6 @@ namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
 					? -1
 					: 0;
 		}
+		
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

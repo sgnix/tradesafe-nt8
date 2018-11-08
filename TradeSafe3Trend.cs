@@ -43,7 +43,7 @@ namespace TradeSafe3
 }
 
 //This namespace holds Indicators in this folder and is required. Do not change it.
-namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
+namespace NinjaTrader.NinjaScript.Indicators
 {
     public class TradeSafe3Trend : TradeSafe3Headless
 	{
@@ -323,6 +323,7 @@ namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
         #endregion
 	}
 }
+
 
 
 

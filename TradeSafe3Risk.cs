@@ -22,7 +22,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it.
-namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
+namespace NinjaTrader.NinjaScript.Indicators
 {
 	public class TradeSafe3Risk : Indicator
 	{
@@ -99,26 +99,25 @@ namespace NinjaTrader.NinjaScript.Indicators.TradeSafeSuite
 	}
 }
 
-
 #region NinjaScript generated code. Neither change nor remove.
 
 namespace NinjaTrader.NinjaScript.Indicators
 {
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
-		private TradeSafeSuite.TradeSafe3Risk[] cacheTradeSafe3Risk;
-		public TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk()
+		private TradeSafe3Risk[] cacheTradeSafe3Risk;
+		public TradeSafe3Risk TradeSafe3Risk()
 		{
 			return TradeSafe3Risk(Input);
 		}
 
-		public TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input)
+		public TradeSafe3Risk TradeSafe3Risk(ISeries<double> input)
 		{
 			if (cacheTradeSafe3Risk != null)
 				for (int idx = 0; idx < cacheTradeSafe3Risk.Length; idx++)
 					if (cacheTradeSafe3Risk[idx] != null &&  cacheTradeSafe3Risk[idx].EqualsInput(input))
 						return cacheTradeSafe3Risk[idx];
-			return CacheIndicator<TradeSafeSuite.TradeSafe3Risk>(new TradeSafeSuite.TradeSafe3Risk(), input, ref cacheTradeSafe3Risk);
+			return CacheIndicator<TradeSafe3Risk>(new TradeSafe3Risk(), input, ref cacheTradeSafe3Risk);
 		}
 	}
 }
@@ -127,12 +126,12 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk()
+		public Indicators.TradeSafe3Risk TradeSafe3Risk()
 		{
 			return indicator.TradeSafe3Risk(Input);
 		}
 
-		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
+		public Indicators.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
 		{
 			return indicator.TradeSafe3Risk(input);
 		}
@@ -143,12 +142,12 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk()
+		public Indicators.TradeSafe3Risk TradeSafe3Risk()
 		{
 			return indicator.TradeSafe3Risk(Input);
 		}
 
-		public Indicators.TradeSafeSuite.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
+		public Indicators.TradeSafe3Risk TradeSafe3Risk(ISeries<double> input )
 		{
 			return indicator.TradeSafe3Risk(input);
 		}
