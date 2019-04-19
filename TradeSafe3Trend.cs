@@ -486,3 +486,6 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 
 
+
+
+
